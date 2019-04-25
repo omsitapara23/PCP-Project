@@ -13,6 +13,7 @@ int radix;
 int leaves;
 map<int,bool> thread_sense;
 int num_nodes = 0;
+
 class Node
 {
     public:
@@ -107,17 +108,12 @@ class Node
 
 Node** leaf;
 
-
-
 void buildTree(Node* parent, int depth)
 {
     if(depth == 0)
     {
         cout << "setting leaf " << endl;
-        // for(int i = 0; i < radix; i++)
-        // {
-            leaf[leaves++] = parent;
-        // }
+        leaf[leaves++] = parent;
     }
     else
     {
@@ -130,6 +126,7 @@ void buildTree(Node* parent, int depth)
     }
     
 }
+
 void TreeBarrier(int n, int r)
 {
     radix = r;
@@ -171,6 +168,7 @@ int main()
     TreeBarrier(n,2);
     for(int i = 0; i < num_nodes; i++)
         thread_sense[i] = true;
+
     thread threads[n];
     for(int i = 0; i < n; i++)
     {
