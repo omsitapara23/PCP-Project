@@ -47,35 +47,54 @@ public:
 
 SenseReversingBarrier* bSense;
 
+int *avg;
+
 void calcPrimes(int thID) {
-    int count = 10 * (thID + 1), c = 0, p = 2;
-    while(c != count) {
-        bool flag = true;
-        for(int i=2; i<sqrt(p); i++) {
-            if(p % i == 0) {
-                flag = false;
-                break;
+    for(int i = 0; i < 5; i++) {
+        int count = 100 * (thID + 1) * (i + 1), c = 0, p = 2;
+        while(c != count) {
+            bool flag = true;
+            for(int i=2; i<sqrt(p); i++) {
+                if(p % i == 0) {
+                    flag = false;
+                    break;
+                }
             }
+            if(flag)
+                c++;
         }
-        if(flag)
-            c++;
+        printf("%dth prime calculation finished by thread %d\n", i + 1, thID + 1);
+        auto start = chrono::steady_clock::now();
+        bSense->await(thID);
+        auto end = chrono::steady_clock::now();
+
+        int t = chrono::duration_cast<chrono::microseconds>(end - start).count();
+        avg[thID] += t;
     }
-    printf("Prime calculation finished by thread %d\n", thID + 1);
-    bSense->await(thID);
+    avg[thID] = avg[thID]/5;
 }
 
 int main(int argc, char const *argv[]) {
     int n;
     cin >> n;
     thread th[n];
+    avg = new int[n];
     bSense = new SenseReversingBarrier(n);
 
     for(int i=0; i<n; i++) {
+        avg[i] = 0;
         th[i] = thread(calcPrimes, i);
     }
 
     for(int i=0; i<n; i++) {
         th[i].join();
     }
+    
+    int avg_time = 0;
+    for(int i=0; i<n; i++) 
+        avg_time += avg[i];
+    avg_time = avg_time/n;
+
+    cout << "Average waiting time on Static Tree Barrier for each thread = " << avg_time << " microseconds" << endl;
     return 0;
 }

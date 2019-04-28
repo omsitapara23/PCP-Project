@@ -37,20 +37,22 @@ public:
 SimpleBarrier* b;
 
 void calcPrimes(int thID) {
-    int count = 10 * (thID + 1), c = 0, p = 2;
-    while(c != count) {
-        bool flag = true;
-        for(int i=2; i<sqrt(p); i++) {
-            if(p % i == 0) {
-                flag = false;
-                break;
+    for(int i = 0; i < 5; i++) {
+        int count = 100 * (thID + 1) * (i + 1), c = 0, p = 2;
+        while(c != count) {
+            bool flag = true;
+            for(int i=2; i<sqrt(p); i++) {
+                if(p % i == 0) {
+                    flag = false;
+                    break;
+                }
             }
+            if(flag)
+                c++;
         }
-        if(flag)
-            c++;
+        printf("%dth prime calculation finished by thread %d\n", i + 1, thID + 1);
+        b->await();
     }
-    printf("Prime calculation finished by thread %d\n", thID + 1);
-    b->await();
 }
 
 int main(int argc, char const *argv[]) {
