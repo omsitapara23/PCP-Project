@@ -8,7 +8,6 @@
 #include <mutex>
 using namespace std;
 
-mutex mtx;
 atomic<int> mss{0};
 
 // class Barrier {
@@ -115,17 +114,15 @@ void calcPrimes(int thID) {
 
 int main() {
     int n;
-    cin  >> radix;
+    cin >> radix;
     fstream outfile, outfile1;
     outfile.open("st_messages.txt", ios::out | ios::app);
     outfile1.open("st_time.txt", ios::out | ios::app);
-    for(int itr = 1; itr < 6; itr++)
-    {
-        int n = (pow(radix,itr) - 1)/(radix - 1);
+    for(int itr = 1; itr < 6; itr++) {
+        int n = (pow(radix, itr) - 1)/(radix - 1);
         int avg_mss = 0;
         int avg_time = 0;
-        for(int inn = 0; inn < 5; inn++)
-        {
+        for(int inn = 0; inn < 5; inn++) {
             staticTreeBarrier(n);
 
             // int numNodes = pow(radix, depth + 1);
@@ -151,7 +148,6 @@ int main() {
         outfile1 << n << "," << avg_time << endl;
         outfile << n << "," << avg_mss << endl;
     }
-
 
     return 0;
 }

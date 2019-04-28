@@ -129,15 +129,12 @@ int main() {
     fstream outfile, outfile1;
     outfile.open("ct_messages.txt", ios::out | ios::app);
     outfile1.open("ct_time.txt", ios::out | ios::app);
-    for(int itr = 1; itr < 6; itr++)
-    {
-        int n = pow(radix,itr);
+    for(int itr = 1; itr < 6; itr++) {
+        int n = pow(radix, itr);
         int avg_mss = 0;
         int avg_time = 0;
-        for(int inn = 0; inn < 5; inn++)
-        {
+        for(int inn = 0; inn < 5; inn++) {
             combiningTreeBarrier(n);
-            
             
             for(int i = 0; i < num_nodes + 1; i++)
                 thread_sense[i] = true;
@@ -154,8 +151,7 @@ int main() {
             for(int i=0; i<n; i++) 
                 avg_time += avg[i];
             avg_mss += mss;
-            mss = 0;
-            
+            mss = 0;           
         }
         avg_time = avg_time/(n*5);
         avg_mss = avg_mss/5;

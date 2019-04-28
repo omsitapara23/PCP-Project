@@ -75,26 +75,32 @@ void calcPrimes(int thID) {
 }
 
 int main(int argc, char const *argv[]) {
-    int n;
-    cin >> n;
-    thread th[n];
-    avg = new int[n];
-    bSense = new SenseReversingBarrier(n);
+    fstream outfile, outfile1;
+    outfile1.open("sr_time.txt", ios::out | ios::app);
+    for(int itr = 2; itr < 120; itr+=2) {
+        int n = itr;
+        int avg_mss = 0;
+        int avg_time = 0;
+        for(int inn = 0; inn < 5; inn++) {
+            thread th[n];
+            avg = new int[n];
+            bSense = new SenseReversingBarrier(n);
+            
+            for(int i=0; i<n; i++) {
+                avg[i] = 0;
+                th[i] = thread(calcPrimes, i);
+            }
 
-    for(int i=0; i<n; i++) {
-        avg[i] = 0;
-        th[i] = thread(calcPrimes, i);
-    }
-
-    for(int i=0; i<n; i++) {
-        th[i].join();
+            for(int i=0; i<n; i++) {
+                th[i].join();
+            }
+            
+            for(int i=0; i<n; i++) 
+                avg_time += avg[i];
+        }
+        avg_time = avg_time/(n*5);
+        outfile1 << n << "," << avg_time << endl;
     }
     
-    int avg_time = 0;
-    for(int i=0; i<n; i++) 
-        avg_time += avg[i];
-    avg_time = avg_time/n;
-
-    cout << "Average waiting time on Static Tree Barrier for each thread = " << avg_time << " microseconds" << endl;
     return 0;
 }
