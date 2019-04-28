@@ -9,6 +9,7 @@
 using namespace std;
 
 mutex mtx;
+atomic<int> mss{0};
 
 // class Barrier {
 // public:
@@ -37,6 +38,7 @@ public:
         childCount = children;
 
         if(parent != NULL) {
+            mss+=1;
             parent->childDone();
             while(sense != mySense) {};
         } else {
@@ -113,27 +115,43 @@ void calcPrimes(int thID) {
 
 int main() {
     int n;
-    cin >> n >> radix;
-    staticTreeBarrier(n);
+    cin  >> radix;
+    fstream outfile, outfile1;
+    outfile.open("st_messages.txt", ios::out | ios::app);
+    outfile1.open("st_time.txt", ios::out | ios::app);
+    for(int itr = 1; itr < 6; itr++)
+    {
+        int n = (pow(radix,itr) - 1)/(radix - 1);
+        int avg_mss = 0;
+        int avg_time = 0;
+        for(int inn = 0; inn < 5; inn++)
+        {
+            staticTreeBarrier(n);
 
-    // int numNodes = pow(radix, depth + 1);
-    for(int i=0; i<nodes; i++)
-        threadSense[i] = !sense;
+            // int numNodes = pow(radix, depth + 1);
+            for(int i=0; i<nodes; i++)
+                threadSense[i] = !sense;
 
-    thread threads[n];
-    for(int i=0; i<n; i++) {
-        avg[i] = 0;
-        threads[i] = thread(calcPrimes, i);
+            thread threads[n];
+            for(int i=0; i<n; i++) {
+                avg[i] = 0;
+                threads[i] = thread(calcPrimes, i);
+            }
+
+            for(auto &th : threads)
+                th.join();
+
+            for(int i=0; i<n; i++) 
+                avg_time += avg[i];
+            avg_mss += mss;
+            mss = 0;
+        }
+        avg_time = avg_time/(n*5);
+        avg_mss = avg_mss/5;
+        outfile1 << n << "," << avg_time << endl;
+        outfile << n << "," << avg_mss << endl;
     }
 
-    for(auto &th : threads)
-        th.join();
 
-    int avg_time = 0;
-    for(int i=0; i<n; i++) 
-        avg_time += avg[i];
-    avg_time = avg_time/n;
-
-    cout << "Average waiting time on Static Tree Barrier for each thread = " << avg_time << " microseconds" << endl;
     return 0;
 }

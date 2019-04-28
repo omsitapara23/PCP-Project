@@ -11,6 +11,7 @@ using namespace std;
 int radix;
 int leaves;
 map<int,bool> thread_sense;
+atomic<int> mss{0};
 int num_nodes = 0;
 
 class Node {
@@ -46,6 +47,7 @@ public:
         if(position == 1 ) {
             if(parent != NULL) {
                 // printf("Calling await on parent %d by node %d\n", parent->nodeid, nodeid);
+                mss += 1;
                 parent->await();
                 // printf("Freed await on parent %d by node %d\n", parent->nodeid, nodeid);
             }
@@ -122,28 +124,45 @@ void calcPrimes(int thID) {
 }
 
 int main() {
-    int n;
-    cin >> n >> radix;
-    combiningTreeBarrier(n);
-    
-    for(int i = 0; i < num_nodes + 1; i++)
-        thread_sense[i] = true;
+    // int n;
+    cin >> radix;
+    fstream outfile, outfile1;
+    outfile.open("ct_messages.txt", ios::out | ios::app);
+    outfile1.open("ct_time.txt", ios::out | ios::app);
+    for(int itr = 1; itr < 6; itr++)
+    {
+        int n = pow(radix,itr);
+        int avg_mss = 0;
+        int avg_time = 0;
+        for(int inn = 0; inn < 5; inn++)
+        {
+            combiningTreeBarrier(n);
+            
+            
+            for(int i = 0; i < num_nodes + 1; i++)
+                thread_sense[i] = true;
 
-    thread threads[n];
-    for(int i = 0; i < n; i++) {
-        avg[i] = 0;
-        threads[i] = thread(calcPrimes, i);
+            thread threads[n];
+            for(int i = 0; i < n; i++) {
+                avg[i] = 0;
+                threads[i] = thread(calcPrimes, i);
+            }
+
+            for(auto &th : threads)
+                th.join();
+
+            for(int i=0; i<n; i++) 
+                avg_time += avg[i];
+            avg_mss += mss;
+            mss = 0;
+            
+        }
+        avg_time = avg_time/(n*5);
+        avg_mss = avg_mss/5;
+        outfile1 << n << "," << avg_time << endl;
+        outfile << n << "," << avg_mss << endl;
     }
-
-    for(auto &th : threads)
-        th.join();
-
-    int avg_time = 0;
-    for(int i=0; i<n; i++) 
-        avg_time += avg[i];
-    avg_time = avg_time/n;
-
-    cout << "Average waiting time on Static Tree Barrier for each thread = " << avg_time << " microseconds" << endl;
+    
     return 0;
 }
 
